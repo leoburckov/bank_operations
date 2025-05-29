@@ -1,7 +1,7 @@
-#from src.masks import get_mask_card_number, get_mask_account
+# from src.masks import get_mask_card_number, get_mask_account
 from processing import filter_by_state, sort_by_date
 from src import widget
-from src import processing
+
 
 operations_list = [
     {"id": 41428829, "state": "EXECUTED", "date": "2019-07-03T18:35:29.512364"},
@@ -13,11 +13,11 @@ operations_list = [
 state_key = input("Введите значение state")
 if not state_key.isalpha():
     state_key = "EXECUTED"
-# переходим в модуль processing.py   с возможностью поменять ключ фильтрации
+# переходим в модуль processing.py с возможностью поменять ключ фильтрации
 
-filtered = filter_by_state(operations_list, state := state_key)
+filtered_operations = filter_by_state(operations_list, state := state_key)
 
-sorted_operations = sort_by_date(filtered)
+sorted_operations = sort_by_date(filtered_operations)
 
 for operation in sorted_operations:
     print(operation)
