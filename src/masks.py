@@ -1,7 +1,7 @@
 def get_mask_card_number(number_cart: str) -> str:
     """Функция которая принимает на вход номер карты и возвращает ее маску"""
     number_cart = number_cart.replace(" ", "")
-    mask_cart = " ".join(number_cart[i : i + 4] for i in range(0, len(number_cart), 4))
+    mask_cart = " ".join(number_cart[i:i + 4] for i in range(0, len(number_cart), 4))
     mask_cart_list = list(mask_cart)
 
     for i in range(len(mask_cart_list)):
@@ -15,7 +15,7 @@ mask = get_mask_card_number("1234567812345678")
 print(mask)
 
 
-def get_mask_account(number_cart: str) ->str:
+def get_mask_account(number_cart: str) -> str:
     """Функция принимает на вход номер счета и возвращает его маску"""
     number_cart = number_cart.replace(" ", "")
     number_mask = str(number_cart[-4:])
