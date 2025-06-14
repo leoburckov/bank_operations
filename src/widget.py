@@ -1,36 +1,24 @@
 from src.masks import get_mask_account, get_mask_card_number
 
 
-def mask_account_card(number_type: str) -> str:
-    """Функция принимает тип и номер карты или счета и возвращает строку с замаскированным номером"""
-    length_name_card_or_account = 0
-    for char in number_type:
-        if not char.isdigit():
-            length_name_card_or_account += 1
-    print(len(number_type))
-    print(length_name_card_or_account)
-    if "Счет" or "счет" in number_type:
-        number_mask = get_mask_account(number_type[length_name_card_or_account:])
-        return "".join(number_type[0:length_name_card_or_account] + number_mask)
+def get_mask_account_card(card_mask: str) -> str:
+    """принимает номер либо номер карты либо счета и возвращает их особенную маску маску"""
+    if len(card_mask) == 16:
+        return get_mask_card_number(card_mask)
+    elif len(card_mask) == 20:
+        return get_mask_account(card_mask)
     else:
-        number_mask = get_mask_card_number(number_type[length_name_card_or_account:])
-        return "".join({number_type[0:length_name_card_or_account] + number_mask})
+        # return ""
+        raise ValueError(f"Неподходящая длина строки: {len(card_mask)}")
 
 
-number_type = input()
-print(mask_account_card(number_type))
+def get_date(date: str) -> str:
+    """замена формата даты на краткий дд.мм.гггг"""
+
+    new_date = date[:10].split("-")
+    return ".".join(new_date[::-1])
 
 
-def get_date(old_data: str) -> str:
-    """принимает на вход строку с датой в формате
-    "2024-03-11T02:26:18.671407"
-     и возвращает строку с датой в формате
-    "ДД.ММ.ГГГГ"
-     (
-    "11.03.2024"
-    )."""
-    data = old_data[0:10].split("-")
-    return ".".join(data[::-1])
-
-
-print(get_date("2024-03-11T02:26:18.671407"))
+if __name__ == "__main__":
+    print(get_mask_account_card(input()))
+    print(get_date(input()))
