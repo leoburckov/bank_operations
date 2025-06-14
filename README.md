@@ -1,4 +1,3 @@
-#Проект2
 
 ## Описание
  Программа - на Python для банковского приложения.
@@ -20,3 +19,16 @@ pip install -r requirements.txt
 
 ## Документация:
 "Документация будет заполнятся в процессе..."
+
+## Новый модуль generators
+
+Модуль содержит генераторы для обработки транзакций:
+
+### filter_by_currency
+Фильтрует транзакции по валюте.
+```python
+from bank_operations.generators import filter_by_currency
+
+transactions = [...]  # список транзакций
+for tx in filter_by_currency(transactions, "USD"):
+    print(tx)
