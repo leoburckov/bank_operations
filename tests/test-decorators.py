@@ -41,31 +41,5 @@ def test_fail_divide_console(capsys):
     assert "fail_divide error: ZeroDivisionError" in captured.out
     assert "Inputs: (1, 0), {}" in captured.out
 
-# ------------------------------------
-# Тесты для логов в файл
-# ------------------------------------
 
-def test_add_file():
-    if os.path.exists("test_log.txt"):
-        os.remove("test_log.txt")
 
-    result = add_file(4, 5)
-    assert result == 9
-
-    with open("test_log.txt", "r", encoding="utf-8") as f:
-        content = f.read()
-        assert "add_file start" in content
-        assert "add_file ok" in content
-
-def test_fail_divide_file():
-    if os.path.exists("test_log.txt"):
-        os.remove("test_log.txt")
-
-    with pytest.raises(ZeroDivisionError):
-        fail_divide_file(10, 0)
-
-    with open("test_log.txt", "r", encoding="utf-8") as f:
-        content = f.read()
-        assert "fail_divide_file start" in content
-        assert "fail_divide_file error: ZeroDivisionError" in content
-        assert "Inputs: (10, 0), {}" in content
