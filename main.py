@@ -2,7 +2,7 @@
 from processing import filter_by_state, sort_by_date, data_bank
 from src import widget
 from src.generators import filter_by_currency, transaction_descriptions, card_number_generator
-
+from decorators import log
 
 transactions = [
     {
@@ -78,3 +78,28 @@ print("\n🔹 Генерация номеров карт от 1 до 3:")
 card_gen = card_number_generator(1, 3)
 for card in card_gen:
     print(card)
+
+@log()
+def mask_account_number(account_number):
+    if not account_number:
+        raise ValueError("Empty account number")
+    return "**" + account_number[-4:]
+
+@log("operations.log")
+def sort_transactions_by_date(transactions):
+    return sorted(transactions, key=lambda x: x.get("date", ""))
+
+if __name__ == "__main__":
+    print(mask_account_number("1234567890123456"))
+
+    transactions = [
+        {"date": "2024-05-02", "amount": 100},
+        {"date": "2024-05-01", "amount": 200}
+    ]
+    print(sort_transactions_by_date(transactions))
+
+    # Провокация ошибки
+    try:
+        mask_account_number("")
+    except ValueError:
+        print("Поймано ValueError")
