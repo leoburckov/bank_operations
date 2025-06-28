@@ -55,7 +55,7 @@ def display_transaction_info(json_path: str, currency: str = "USD"):
 
 
 @log()
-def demo_card_generation(start=1, end=3):
+def demo_card_generation(start=1, end=9999):
     print("\n🎴 Генерация номеров карт:")
     for card in card_number_generator(start, end):
         print(card)
