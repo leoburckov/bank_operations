@@ -1,6 +1,7 @@
 import os
-from dotenv import load_dotenv
+from typing import Optional
 
+from dotenv import load_dotenv
 from utils import read_json_file
 from external_api import convert_to_rub
 from generators import (
@@ -11,12 +12,11 @@ from generators import (
 from decorators import log
 
 
-# Загружаем переменные окружения
 load_dotenv()
 
 
 @log("main.log")
-def mask_account_number(account_number):
+def mask_account_number(account_number: str) -> str:
     """Маскирует номер счета, оставляя только последние 4 цифры"""
     if not account_number:
         raise ValueError("Account number is empty")
@@ -24,13 +24,13 @@ def mask_account_number(account_number):
 
 
 @log("main.log")
-def sort_transactions_by_date(transactions):
+def sort_transactions_by_date(transactions: list[dict]) -> list[dict]:
     """Сортирует транзакции по дате"""
     return sorted(transactions, key=lambda x: x.get("date", ""))
 
 
 @log("main.log")
-def display_transaction_info(json_path: str, currency: str = "USD"):
+def display_transaction_info(json_path: str, currency: str = "USD") -> None:
     """
     Загружает данные из JSON, фильтрует по валюте, конвертирует сумму в рубли и выводит информацию.
     """
@@ -55,17 +55,16 @@ def display_transaction_info(json_path: str, currency: str = "USD"):
 
 
 @log()
-def demo_card_generation(start=1, end=9999):
+def demo_card_generation(start: int = 1, end: int = 3) -> None:
     print("\n🎴 Генерация номеров карт:")
     for card in card_number_generator(start, end):
         print(card)
 
 
 if __name__ == "__main__":
-    path_to_data = "data/operations.json"
+    path_to_data: str = "data/operations.json"
 
-    # Проверяем, что API-ключ загружен
-    if not os.getenv("API_KEY"):
+    if not os.getenv("EXCHANGE_API_KEY"):
         print("❌ Не найден EXCHANGE_API_KEY в .env. Проверьте конфигурацию.")
     else:
         print("📁 Обработка операций из JSON-файла...\n")

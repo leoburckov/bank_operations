@@ -1,4 +1,5 @@
 import os
+
 import requests
 from dotenv import load_dotenv
 
@@ -23,11 +24,7 @@ def convert_to_rub(transaction: dict) -> float:
     if currency_code not in {"USD", "EUR"} or not API_KEY:
         return 0.0
 
-    params = {
-        "from": currency_code,
-        "to": "RUB",
-        "amount": amount
-    }
+    params = {"from": currency_code, "to": "RUB", "amount": amount}
 
     headers = {"apikey": API_KEY}
 
