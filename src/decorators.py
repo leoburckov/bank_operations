@@ -16,7 +16,7 @@ def log(filename=None):
             output = sys.stdout
             file_handle = None
             if filename:
-                file_handle = open(filename, 'a', encoding='utf-8')
+                file_handle = open(filename, "a", encoding="utf-8")
                 output = file_handle
 
             try:
@@ -36,10 +36,7 @@ def log(filename=None):
 
             except Exception as e:
                 # Логируем ошибку
-                print(
-                    f"{func.__name__} error: {type(e).__name__}. Inputs: {args}, {kwargs}",
-                    file=output
-                )
+                print(f"{func.__name__} error: {type(e).__name__}. Inputs: {args}, {kwargs}", file=output)
                 if file_handle:
                     file_handle.close()
                 raise
