@@ -1,16 +1,14 @@
 import os
-from typing import Optional
-
 from dotenv import load_dotenv
 from src.utils import read_json_file
 from src.external_api import convert_to_rub
 from src.generators import (
     filter_by_currency,
     transaction_descriptions,
-    card_number_generator,
+    card_number_generator
 )
 from src.decorators import log
-from src.masks import *
+from src.masks import get_mask_account, get_mask_card_number, get_date
 
 load_dotenv()
 

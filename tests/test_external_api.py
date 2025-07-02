@@ -24,6 +24,6 @@ def test_convert_to_rub_eur(mock_get) -> None:
     assert result == 105.0
 
 
-def test_convert_to_rub_rub() ->None:
+def test_convert_to_rub_rub() -> None:
     transaction = {"operationAmount": {"amount": "1000", "currency": {"code": "RUB"}}}
     assert convert_to_rub(transaction) == 1000.0

@@ -24,6 +24,6 @@ def test_read_non_list_json(tmp_path) -> None:
     assert result == []
 
 
-def test_read_file_not_found() ->None:
+def test_read_file_not_found() -> None:
     result = read_json_file("non_existent.json")
     assert result == []
