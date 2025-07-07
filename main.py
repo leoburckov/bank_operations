@@ -1,14 +1,13 @@
 import os
+
 from dotenv import load_dotenv
-from src.utils import read_json_file
-from src.external_api import convert_to_rub
-from src.generators import (
-    filter_by_currency,
-    transaction_descriptions,
-    card_number_generator
-)
+
 from src.decorators import log
-from src.masks import get_mask_account, get_mask_card_number, get_date
+from src.external_api import convert_to_rub
+from src.generators import card_number_generator, filter_by_currency, transaction_descriptions
+from src.importers import read_transactions_from_csv, read_transactions_from_excel
+from src.masks import get_date, get_mask_account, get_mask_card_number
+from src.utils import read_json_file
 
 load_dotenv()
 
@@ -76,3 +75,27 @@ formatted_date = get_date("2024-06-01T12:34:56.789")
 print(masked_from)
 print(masked_to)
 print(formatted_date)
+
+
+def main()-> None:
+    # Путь к CSV и Excel файлам в папке data/
+    csv_filepath = "data/transactions.csv"
+    excel_filepath = "data/transactions_excel.xlsx"
+
+    # Чтение транзакций из CSV
+    csv_data = read_transactions_from_csv(csv_filepath)
+    print("=== Транзакции из CSV ===")
+    for tx in csv_data:
+        print(tx)
+
+    print("\n")
+
+    # Чтение транзакций из Excel
+    excel_data = read_transactions_from_excel(excel_filepath)
+    print("=== Транзакции из Excel ===")
+    for tx in excel_data:
+        print(tx)
+
+
+if __name__ == "__main__":
+    main()
