@@ -1,36 +1,34 @@
 import os
 from dotenv import load_dotenv
-
-from utils import read_json_file
-from external_api import convert_to_rub
-from generators import (
+from src.utils import read_json_file
+from src.external_api import convert_to_rub
+from src.generators import (
     filter_by_currency,
     transaction_descriptions,
-    card_number_generator,
+    card_number_generator
 )
-from decorators import log
+from src.decorators import log
+from src.masks import get_mask_account, get_mask_card_number, get_date
 
-
-# Загружаем переменные окружения
 load_dotenv()
 
 
-@log("main.log")
-def mask_account_number(account_number):
+@log("masks.log")
+def mask_account_number(account_number: str) -> str:
     """Маскирует номер счета, оставляя только последние 4 цифры"""
     if not account_number:
         raise ValueError("Account number is empty")
     return "**" + account_number[-4:]
 
 
-@log("main.log")
-def sort_transactions_by_date(transactions):
+@log("masks.log")
+def sort_transactions_by_date(transactions: list[dict]) -> list[dict]:
     """Сортирует транзакции по дате"""
     return sorted(transactions, key=lambda x: x.get("date", ""))
 
 
-@log("main.log")
-def display_transaction_info(json_path: str, currency: str = "USD"):
+@log("masks.log")
+def display_transaction_info(json_path: str, currency: str = "USD") -> None:
     """
     Загружает данные из JSON, фильтрует по валюте, конвертирует сумму в рубли и выводит информацию.
     """
@@ -55,16 +53,15 @@ def display_transaction_info(json_path: str, currency: str = "USD"):
 
 
 @log()
-def demo_card_generation(start=1, end=3):
+def demo_card_generation(start: int = 1, end: int = 3) -> int:
     print("\n🎴 Генерация номеров карт:")
     for card in card_number_generator(start, end):
         print(card)
 
 
 if __name__ == "__main__":
-    path_to_data = "data/operations.json"
+    path_to_data: str = "data/operations.json"
 
-    # Проверяем, что API-ключ загружен
     if not os.getenv("API_KEY"):
         print("❌ Не найден EXCHANGE_API_KEY в .env. Проверьте конфигурацию.")
     else:
@@ -72,3 +69,10 @@ if __name__ == "__main__":
         display_transaction_info(path_to_data, currency="USD")
 
     demo_card_generation()
+
+masked_from = get_mask_card_number("1234567890123456")
+masked_to = get_mask_account("40817810099910004312")
+formatted_date = get_date("2024-06-01T12:34:56.789")
+print(masked_from)
+print(masked_to)
+print(formatted_date)

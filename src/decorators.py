@@ -1,32 +1,32 @@
 import functools
 import sys
+from typing import Callable, Any, Optional, TypeVar, cast
+
+# Общий тип для декорируемых функций
+F = TypeVar("F", bound=Callable[..., Any])
 
 
-def log(filename=None):
+def log(filename: Optional[str] = None) -> Callable[[F], F]:
     """
     Декоратор для логирования начала и конца выполнения функции, её результатов или ошибок.
 
     :param filename: путь к файлу для логов (по умолчанию None — вывод в консоль)
+    :return: декоратор
     """
 
-    def decorator(func):
+    def decorator(func: F) -> F:
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            # Определяем поток вывода
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             output = sys.stdout
             file_handle = None
+
             if filename:
                 file_handle = open(filename, "a", encoding="utf-8")
                 output = file_handle
 
             try:
-                # Логируем начало
                 print(f"{func.__name__} start", file=output)
-
-                # Выполняем функцию
                 result = func(*args, **kwargs)
-
-                # Логируем успешное завершение
                 print(f"{func.__name__} ok", file=output)
 
                 if file_handle:
@@ -35,12 +35,11 @@ def log(filename=None):
                 return result
 
             except Exception as e:
-                # Логируем ошибку
                 print(f"{func.__name__} error: {type(e).__name__}. Inputs: {args}, {kwargs}", file=output)
                 if file_handle:
                     file_handle.close()
                 raise
 
-        return wrapper
+        return cast(F, wrapper)
 
     return decorator
