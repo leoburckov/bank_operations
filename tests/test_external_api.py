@@ -1,5 +1,6 @@
-from external_api import convert_to_rub
 from unittest.mock import patch
+
+from external_api import convert_to_rub
 
 
 @patch("external_api.requests.get")

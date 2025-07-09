@@ -20,6 +20,17 @@ pip install -r requirements.txt
 ## Документация:
 "Документация будет заполнятся в процессе..."
 
+
+## 📥 Импорт транзакций (`importers.py`)
+
+Модуль `src/importers.py` позволяет загружать транзакции из файлов:
+
+
+from importers import read_transactions_from_csv, read_transactions_from_excel
+
+csv_data = read_transactions_from_csv("data/transactions.csv")
+xlsx_data = read_transactions_from_excel("data/transactions_excel.xlsx")
+
 ## Новый модуль generators
 
 Модуль содержит генераторы для обработки транзакций:
@@ -32,3 +43,6 @@ from bank_operations.generators import filter_by_currency
 transactions = [...]  # список транзакций
 for tx in filter_by_currency(transactions, "USD"):
     print(tx)
+
+
+

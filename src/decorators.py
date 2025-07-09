@@ -1,6 +1,6 @@
 import functools
 import sys
-from typing import Callable, Any, Optional, TypeVar, cast
+from typing import Any, Callable, Optional, TypeVar, cast
 
 # Общий тип для декорируемых функций
 F = TypeVar("F", bound=Callable[..., Any])
