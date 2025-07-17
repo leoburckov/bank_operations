@@ -1,100 +1,114 @@
-import os
-
-from dotenv import load_dotenv
-
-from src.decorators import log
-from src.external_api import convert_to_rub
-from src.generators import card_number_generator, filter_by_currency, transaction_descriptions
-from src.importers import read_transactions_from_csv, read_transactions_from_excel
-from src.masks import get_date, get_mask_account, get_mask_card_number
 from src.utils import read_json_file
+from src.masks import get_mask_card_number, get_mask_account, get_date
+from src.importers import read_transactions_from_csv, read_transactions_from_excel
+from src.analytics import process_bank_search, process_bank_operations, normalize_status
+from src.processing import sort_by_date, filter_by_state
 
-load_dotenv()
-
-
-@log("masks.log")
-def mask_account_number(account_number: str) -> str:
-    """Маскирует номер счета, оставляя только последние 4 цифры"""
-    if not account_number:
-        raise ValueError("Account number is empty")
-    return "**" + account_number[-4:]
+AVAILABLE_STATUSES = {"EXECUTED", "CANCELED", "PENDING"}
 
 
-@log("masks.log")
-def sort_transactions_by_date(transactions: list[dict]) -> list[dict]:
-    """Сортирует транзакции по дате"""
-    return sorted(transactions, key=lambda x: x.get("date", ""))
+def main() -> None:
+    print("Привет! Добро пожаловать в программу работы с банковскими транзакциями.")
+    print("Выберите необходимый пункт меню:")
+    print("1. Получить информацию о транзакциях из JSON-файла")
+    print("2. Получить информацию о транзакциях из CSV-файла")
+    print("3. Получить информацию о транзакциях из XLSX-файла")
 
+    choice = input("Пользователь: ").strip()
 
-@log("masks.log")
-def display_transaction_info(json_path: str, currency: str = "USD") -> None:
-    """
-    Загружает данные из JSON, фильтрует по валюте, конвертирует сумму в рубли и выводит информацию.
-    """
-    transactions = read_json_file(json_path)
-
-    if not transactions:
-        print("Файл пуст, не найден или содержит некорректные данные.")
+    if choice == "1":
+        print("Программа: Для обработки выбран JSON-файл.")
+        data = read_json_file("data/operations.json")
+    elif choice == "2":
+        print("Программа: Для обработки выбран CSV-файл.")
+        data = read_transactions_from_csv("data/transactions.csv")
+    elif choice == "3":
+        print("Программа: Для обработки выбран Excel-файл.")
+        data = read_transactions_from_excel("data/transactions_excel.xlsx")
+    else:
+        print("Программа: Неверный выбор. Завершение работы.")
         return
 
-    sorted_tx = sort_transactions_by_date(transactions)
-    filtered = filter_by_currency(sorted_tx, currency)
+    if not data:
+        print("Программа: Нет данных для обработки.")
+        return
 
-    print(f"\n🔎 Транзакции в валюте {currency}:")
-    for tx in filtered:
-        tx_id = tx.get("id")
-        desc = tx.get("description", "Без описания")
+    # Фильтрация по статусу
+    while True:
+        status = input("\nВведите статус (EXECUTED, CANCELED, PENDING): ").strip()
+        norm_status = normalize_status(status)
+        if norm_status in AVAILABLE_STATUSES:
+            break
+        print(f'Программа: Статус операции "{status}" недоступен.')
+
+    data = [tx for tx in data if normalize_status(tx.get("state", "")) == norm_status]
+    print(f'Программа: Операции отфильтрованы по статусу "{norm_status}"')
+
+    # Сортировка по дате
+    sort_answer = input("\nОтсортировать операции по дате? Да/Нет: ").strip().lower()
+    if sort_answer == "да":
+        direction = input("Отсортировать по возрастанию или по убыванию? ").strip().lower()
+        reverse = direction != "по возрастанию"
+        data = sort_by_date(data)
+        if reverse:
+            data = data[::-1]
+
+    # Фильтрация по валюте
+    currency_answer = input("Выводить только рублевые транзакции? Да/Нет: ").strip().lower()
+    if currency_answer == "да":
+        data = filter_by_state(data)
+
+    # Поиск по описанию
+    search_answer = input("Отфильтровать по слову в описании? Да/Нет: ").strip().lower()
+    if search_answer == "да":
+        word = input("Введите слово для поиска в описании: ").strip()
+        data = process_bank_search(data, word)
+
+    if not data:
+        print("\nПрограмма: Не найдено ни одной транзакции, подходящей под ваши условия фильтрации")
+        return
+
+    print("\nПрограмма: Распечатываю итоговый список транзакций...")
+    print(f"\nВсего банковских операций в выборке: {len(data)}\n")
+
+    for tx in data:
+        date = get_date(tx.get("date", ""))
+        desc = tx.get("description", "")
+        from_acc = tx.get("from", "")
+        to_acc = tx.get("to", "")
+
         try:
-            amount_rub = convert_to_rub(tx)
-            print(f"#{tx_id}: {desc} — {amount_rub:.2f} RUB")
-        except Exception as e:
-            print(f"Ошибка при конвертации транзакции #{tx_id}: {e}")
+            if from_acc:
+                from_masked = get_mask_card_number(from_acc) if " " in from_acc else get_mask_account(from_acc)
+            else:
+                from_masked = ""
 
+            if to_acc:
+                to_masked = get_mask_card_number(to_acc) if " " in to_acc else get_mask_account(to_acc)
+            else:
+                to_masked = ""
+        except ValueError:
+            from_masked = from_acc
+            to_masked = to_acc
 
-@log()
-def demo_card_generation(start: int = 1, end: int = 3) -> int:
-    print("\n🎴 Генерация номеров карт:")
-    for card in card_number_generator(start, end):
-        print(card)
+        amount = tx.get("operationAmount", {}).get("amount", "")
+        currency = tx.get("operationAmount", {}).get("currency", {}).get("name", "")
 
+        print(f"{date} {desc}")
+        if from_masked:
+            print(f"{from_masked} -> {to_masked}")
+        else:
+            print(f"{to_masked}")
+        print(f"Сумма: {amount} {currency}\n")
 
-if __name__ == "__main__":
-    path_to_data: str = "data/operations.json"
-
-    if not os.getenv("API_KEY"):
-        print("❌ Не найден EXCHANGE_API_KEY в .env. Проверьте конфигурацию.")
-    else:
-        print("📁 Обработка операций из JSON-файла...\n")
-        display_transaction_info(path_to_data, currency="USD")
-
-    demo_card_generation()
-
-masked_from = get_mask_card_number("1234567890123456")
-masked_to = get_mask_account("40817810099910004312")
-formatted_date = get_date("2024-06-01T12:34:56.789")
-print(masked_from)
-print(masked_to)
-print(formatted_date)
-
-
-def main()-> None:
-    # Путь к CSV и Excel файлам в папке data/
-    csv_filepath = "data/transactions.csv"
-    excel_filepath = "data/transactions_excel.xlsx"
-
-    # Чтение транзакций из CSV
-    csv_data = read_transactions_from_csv(csv_filepath)
-    print("=== Транзакции из CSV ===")
-    for tx in csv_data:
-        print(tx)
-
-    print("\n")
-
-    # Чтение транзакций из Excel
-    excel_data = read_transactions_from_excel(excel_filepath)
-    print("=== Транзакции из Excel ===")
-    for tx in excel_data:
-        print(tx)
+    # Подсчет категорий операций
+    count_answer = input("Подсчитать количество операций по категориям? Да/Нет: ").strip().lower()
+    if count_answer == "да":
+        categories = list(set(tx.get("description", "") for tx in data if tx.get("description")))
+        counts = process_bank_operations(data, categories)
+        print("\nСтатистика по категориям операций:")
+        for cat, count in counts.items():
+            print(f"{cat}: {count}")
 
 
 if __name__ == "__main__":
